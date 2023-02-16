@@ -1,0 +1,13 @@
+{% extends "gallery.html" %}
+
+{% block contenido %}
+ajaxxx
+{% endblock %}
+
+{% block post_scripts %}
+<script>
+  fetch('/amazon_face/16')
+    .then((res) => res.json())
+    .then((data) => console.log(data))
+</script>
+{% endblock %}

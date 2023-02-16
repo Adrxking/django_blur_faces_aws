@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Faces detector</title>
+  </head>
+  <body>
+    <form method="POST" enctype="multipart/form-data" name="remove_all">
+      {% csrf_token %}
+      {{ removeAll }}
+      <button type="submit">Remove all</button>
+    </form>
+  </body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/jcrop/dist/jcrop.css" />
+    <script src="https://unpkg.com/jcrop"></script>
+    <title>Editar foto {{ image.id }}</title>
+  </head>
+  <body>
+    <a href="{% url 'all_images' %}"> << Atrás </a>
+    FOTO {{ image.id }}
+    <br />
+    {% if image.blur_image %}
+      <h3>BLURED IMAGE:</h3>
+      <img src="{{ image.blur_image.url }}" />
+      <br />
+      <br />
+      <br />
+      <br />
+    {% endif %}
+    <h3>ORIGINAL IMAGE:</h3>
+    <img src="{{ image.image.url }}" id="target" />
+    <br />
+    <button id="blur">Blur</button>
+  </body>
+  <script defer>
+    let info;
+
+    const jcrop = Jcrop.attach("target", {
+      multi: true,
+    });
+
+    const getPicInfo = async (id) => {
+      return fetch(`/amazon_face/${id}`)
+        .then((res) => res.json())
+        .then((data) => data)
+        .catch((err) => alert(err));
+    }
+
+    const processImage = async () => {
+      info = await getPicInfo('{{ image.id }}')
+      const img = document.getElementById('target')
+      for (x of info) {
+        const width = x.Width * img.width;
+        const left = x.Left * img.width;
+        const top = x.Top * img.height;
+        const height = x.Height * img.height;
+        jcrop.newWidget(Jcrop.Rect.create(left, top, width, height), {});
+      }
+    }
+    
+    processImage();
+
+    const blurImage = async (coords) => {
+        const id = '{{ image.id }}';
+        const csrf_token = "{{ csrf_token }}"
+        const options = {
+            method: 'POST',
+            body: JSON.stringify({ coords }),
+            headers: {
+                'X-CSRFToken': csrf_token,
+                'Content-Type': 'application/json'
+            }
+        };
+        return fetch(`/blur_image/${id}`, options)
+    }
+
+    $("#blur").click(async () => {
+      let crops = jcrop.crops;
+      const coords = [];
+      crops.forEach((crop) => {
+        coords.push({ x: crop.pos.x, y: crop.pos.y, w: crop.pos.w, h: crop.pos.h})
+      });
+      await blurImage(coords);
+      window.location.reload();
+    });
+  </script>
+</html>
